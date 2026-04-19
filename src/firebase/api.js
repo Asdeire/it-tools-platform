@@ -9,6 +9,7 @@ import {
   query,
   runTransaction,
   serverTimestamp,
+  updateDoc,
   where,
 } from 'firebase/firestore'
 import { db } from './config.js'
@@ -18,6 +19,14 @@ const likesCol = () => collection(db, 'likes')
 
 function likeDocId(userId, toolId) {
   return `${userId}_${toolId}`
+}
+
+function toMillis(val) {
+  if (val == null) return 0
+  if (typeof val?.toDate === 'function') return val.toDate().getTime()
+  if (val instanceof Date) return val.getTime()
+  if (typeof val === 'number') return val
+  return 0
 }
 
 /**
@@ -40,13 +49,11 @@ export async function getTools() {
  */
 export async function getUserTools(userId) {
   try {
-    const q = query(
-      toolsCol(),
-      where('authorId', '==', userId),
-      orderBy('createdAt', 'desc'),
-    )
+    const q = query(toolsCol(), where('authorId', '==', userId))
     const snap = await getDocs(q)
-    return snap.docs.map((d) => ({ id: d.id, ...d.data() }))
+    return snap.docs
+      .map((d) => ({ id: d.id, ...d.data() }))
+      .sort((a, b) => toMillis(b.createdAt) - toMillis(a.createdAt))
   } catch (err) {
     console.error('[getUserTools]', err)
     throw err
@@ -81,6 +88,37 @@ export async function deleteTool(toolId) {
     await deleteDoc(doc(db, 'tools', toolId))
   } catch (err) {
     console.error('[deleteTool]', err)
+    throw err
+  }
+}
+
+/**
+ * @param {string} toolId
+ * @param {Record<string, unknown>} updates
+ * @returns {Promise<void>}
+ */
+export async function updateTool(toolId, updates) {
+  try {
+    await updateDoc(doc(db, 'tools', toolId), updates)
+  } catch (err) {
+    console.error('[updateTool]', err)
+    throw err
+  }
+}
+
+/**
+ * @param {string} userId
+ * @returns {Promise<Array<string>>} liked tool ids
+ */
+export async function getUserLikedToolIds(userId) {
+  try {
+    const q = query(likesCol(), where('userId', '==', userId))
+    const snap = await getDocs(q)
+    return snap.docs
+      .map((d) => d.data()?.toolId)
+      .filter((id) => typeof id === 'string')
+  } catch (err) {
+    console.error('[getUserLikedToolIds]', err)
     throw err
   }
 }
