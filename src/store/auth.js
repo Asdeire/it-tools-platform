@@ -1,11 +1,7 @@
-import { computed, reactive, readonly } from 'vue'
+import { computed } from 'vue'
+import { defineStore, storeToRefs } from 'pinia'
 import { onAuthStateChanged, signOut } from 'firebase/auth'
 import { auth } from '../firebase/config.js'
-
-const state = reactive({
-  user: null,
-  ready: false,
-})
 
 let _unsubscribe = null
 let _readyResolve = null
@@ -14,26 +10,50 @@ export const authReady = new Promise((resolve) => {
   _readyResolve = resolve
 })
 
+export const useAuthStore = defineStore('auth', {
+  state: () => ({
+    user: null,
+    ready: false,
+  }),
+  getters: {
+    currentUser: (state) => state.user,
+    isAuthenticated: (state) => Boolean(state.user),
+  },
+  actions: {
+    setUser(user) {
+      this.user = user ?? null
+    },
+    setReady(ready) {
+      this.ready = ready
+    },
+  },
+})
+
 export function initAuthStore() {
   if (_unsubscribe) return
 
+  const store = useAuthStore()
+
   _unsubscribe = onAuthStateChanged(auth, (user) => {
-    state.user = user ?? null
-    if (!state.ready) {
-      state.ready = true
+    store.setUser(user)
+    if (!store.ready) {
+      store.setReady(true)
       _readyResolve?.()
       _readyResolve = null
     }
   })
 }
 
-export const currentUser = computed(() => state.user)
-export const isAuthenticated = computed(() => Boolean(state.user))
+export const currentUser = computed(() => useAuthStore().currentUser)
+export const isAuthenticated = computed(() => useAuthStore().isAuthenticated)
 
 export function useAuth() {
   initAuthStore()
+  const store = useAuthStore()
+  const { user, ready } = storeToRefs(store)
+
   return {
-    state: readonly(state),
+    state: { user, ready },
     currentUser,
     isAuthenticated,
   }
