@@ -6,6 +6,7 @@ import {
   createTool,
   deleteTool,
   getUserTools,
+  uploadToolImage,
   updateTool,
 } from '../firebase/api.js'
 import { useAuth } from '../store/auth.js'
@@ -20,6 +21,9 @@ const isModalOpen = ref(false)
 const modalMode = ref('create') // 'create' | 'edit'
 const activeToolId = ref(null)
 const saving = ref(false)
+const selectedImageFile = ref(null)
+const imageUploadError = ref('')
+const existingImageUrl = ref('')
 
 const form = ref({
   title: '',
@@ -37,9 +41,17 @@ const modalTitle = computed(() =>
 function openCreateModal() {
   modalMode.value = 'create'
   activeToolId.value = null
-  form.value = { title: '', description: '', category: 'Dev', link: '' }
+  form.value = {
+    title: '',
+    description: '',
+    category: 'Dev',
+    link: '',
+  }
+  existingImageUrl.value = ''
   isModalOpen.value = true
   errorMsg.value = ''
+  imageUploadError.value = ''
+  selectedImageFile.value = null
 }
 
 function openEditModal(tool) {
@@ -51,13 +63,40 @@ function openEditModal(tool) {
     category: String(tool.category ?? 'Dev'),
     link: String(tool.link ?? ''),
   }
+  existingImageUrl.value = String(tool.imageUrl ?? '').trim()
   isModalOpen.value = true
   errorMsg.value = ''
+  imageUploadError.value = ''
+  selectedImageFile.value = null
 }
 
 function closeModal() {
   if (saving.value) return
   isModalOpen.value = false
+}
+
+function onImageFileChange(event) {
+  imageUploadError.value = ''
+  const file = event?.target?.files?.[0] ?? null
+  if (!file) {
+    selectedImageFile.value = null
+    return
+  }
+
+  if (!String(file.type || '').startsWith('image/')) {
+    imageUploadError.value = 'Please choose an image file.'
+    selectedImageFile.value = null
+    return
+  }
+
+  const maxSizeBytes = 5 * 1024 * 1024
+  if (file.size > maxSizeBytes) {
+    imageUploadError.value = 'Image is too large. Max size is 5MB.'
+    selectedImageFile.value = null
+    return
+  }
+
+  selectedImageFile.value = file
 }
 
 async function refresh() {
@@ -74,15 +113,25 @@ async function refresh() {
 
 async function onSave() {
   if (saving.value) return
+  if (imageUploadError.value) return
   saving.value = true
   errorMsg.value = ''
 
   try {
+    let uploadedImageUrl = existingImageUrl.value
+    if (selectedImageFile.value) {
+      uploadedImageUrl = await uploadToolImage(
+        currentUser.value.uid,
+        selectedImageFile.value,
+      )
+    }
+
     const payload = {
       title: form.value.title.trim(),
       description: form.value.description.trim(),
       category: form.value.category,
       link: form.value.link.trim(),
+      imageUrl: uploadedImageUrl,
     }
 
     if (!payload.title) throw new Error('missing_title')
@@ -103,6 +152,8 @@ async function onSave() {
     }
 
     isModalOpen.value = false
+    selectedImageFile.value = null
+    existingImageUrl.value = ''
   } catch (e) {
     if (String(e?.message || '').includes('missing_title')) {
       errorMsg.value = 'Please enter a title.'
@@ -263,6 +314,39 @@ onMounted(refresh)
                   placeholder="https://…"
                 />
               </div>
+            </div>
+
+            <div>
+              <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                Upload image
+              </label>
+              <input
+                type="file"
+                accept="image/*"
+                class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm ring-1 ring-slate-900/5 file:mr-3 file:rounded-lg file:border-0 file:bg-sky-50 file:px-3 file:py-1.5 file:text-sky-700 hover:file:bg-sky-100 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-500/30 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100 dark:ring-white/5 dark:file:bg-sky-900/30 dark:file:text-sky-300 dark:hover:file:bg-sky-900/50 dark:focus:border-sky-500 dark:focus:ring-sky-400/25"
+                @change="onImageFileChange"
+              />
+              <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                Image is uploaded to Cloudinary and URL is saved in the tool.
+              </p>
+              <p
+                v-if="existingImageUrl && !selectedImageFile"
+                class="mt-1 text-xs text-slate-500 dark:text-slate-400"
+              >
+                Current image is already set. Select a new file to replace it.
+              </p>
+              <p
+                v-if="selectedImageFile"
+                class="mt-1 text-xs font-medium text-slate-600 dark:text-slate-300"
+              >
+                Selected: {{ selectedImageFile.name }}
+              </p>
+              <p
+                v-if="imageUploadError"
+                class="mt-1 text-xs font-medium text-red-600 dark:text-red-300"
+              >
+                {{ imageUploadError }}
+              </p>
             </div>
 
             <div class="pt-2">

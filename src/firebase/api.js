@@ -3,6 +3,7 @@ import {
   collection,
   deleteDoc,
   doc,
+  getDoc,
   getDocs,
   increment,
   orderBy,
@@ -39,6 +40,21 @@ export async function getTools() {
     return snap.docs.map((d) => ({ id: d.id, ...d.data() }))
   } catch (err) {
     console.error('[getTools]', err)
+    throw err
+  }
+}
+
+/**
+ * @param {string} toolId
+ * @returns {Promise<({ id: string } & Record<string, unknown>) | null>}
+ */
+export async function getToolById(toolId) {
+  try {
+    const snap = await getDoc(doc(db, 'tools', toolId))
+    if (!snap.exists()) return null
+    return { id: snap.id, ...snap.data() }
+  } catch (err) {
+    console.error('[getToolById]', err)
     throw err
   }
 }
@@ -162,6 +178,46 @@ export async function toggleLike(userId, toolId) {
     return { liked }
   } catch (err) {
     console.error('[toggleLike]', err)
+    throw err
+  }
+}
+
+/**
+ * Uploads image to Cloudinary and returns public URL.
+ *
+ * @param {string} userId
+ * @param {File} file
+ * @returns {Promise<string>}
+ */
+export async function uploadToolImage(userId, file) {
+  void userId
+
+  try {
+    const cloudName = String(import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || '')
+    const uploadPreset = String(import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || '')
+
+    if (!cloudName || !uploadPreset) {
+      throw new Error('missing_cloudinary_config')
+    }
+
+    const endpoint = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('upload_preset', uploadPreset)
+
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      body: formData,
+    })
+    const data = await response.json()
+
+    if (!response.ok || !data?.secure_url) {
+      throw new Error(data?.error?.message || 'cloudinary_upload_failed')
+    }
+
+    return String(data.secure_url)
+  } catch (err) {
+    console.error('[uploadToolImage]', err)
     throw err
   }
 }

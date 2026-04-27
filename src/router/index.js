@@ -3,6 +3,7 @@ import HomeView from '../views/HomeView.vue'
 import AuthView from '../views/AuthView.vue'
 import MyToolsView from '../views/MyToolsView.vue'
 import FavoritesView from '../views/FavoritesView.vue'
+import ToolDetailsView from '../views/ToolDetailsView.vue'
 import { authReady, isAuthenticated } from '../store/auth.js'
 
 const router = createRouter({
@@ -34,6 +35,11 @@ const router = createRouter({
       name: 'favorites',
       component: FavoritesView,
       meta: { requiresAuth: true },
+    },
+    {
+      path: '/tools/:id',
+      name: 'tool-details',
+      component: ToolDetailsView,
     },
   ],
 })
