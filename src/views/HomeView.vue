@@ -1,30 +1,33 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import AppButton from '../components/layout/AppButton.vue'
 import ToolCard from '../components/tools/ToolCard.vue'
 import { getTools, getUserLikedToolIds, toggleLike } from '../firebase/api.js'
 import { useAuth } from '../store/auth.js'
 
-const CATEGORIES = ['All', 'AI', 'Dev', 'Design']
-const SORT_OPTIONS = [
-  { value: 'newest', label: 'Newest' },
-  { value: 'popular', label: 'Popular' },
-]
+const CATEGORIES = ['all', 'ai', 'dev', 'design']
 
 const tools = ref([])
 const loading = ref(true)
 const loadError = ref(null)
 
 const searchQuery = ref('')
-const categoryFilter = ref('All')
+const categoryFilter = ref('all')
 const sortBy = ref('newest')
 
 const router = useRouter()
 const { currentUser } = useAuth()
+const { t } = useI18n()
 
 const likedToolIds = ref([])
 const pendingLikeToolId = ref(null)
+
+const SORT_OPTIONS = computed(() => [
+  { value: 'newest', label: t('sort.newest') },
+  { value: 'popular', label: t('sort.popular') },
+])
 
 function toMillis(val) {
   if (val == null) return 0
@@ -46,7 +49,7 @@ const filteredSortedTools = computed(() => {
     })
   }
 
-  if (categoryFilter.value !== 'All') {
+  if (categoryFilter.value !== 'all') {
     const cat = categoryFilter.value.toLowerCase()
     list = list.filter(
       (t) => String(t.category ?? '').toLowerCase() === cat,
@@ -153,8 +156,7 @@ onMounted(async () => {
     const [allTools] = await Promise.all([getTools(), loadLikedState()])
     tools.value = allTools
   } catch (e) {
-    loadError.value =
-      'Could not load tools. Check your connection and try again.'
+    loadError.value = t('home.loadError')
   } finally {
     loading.value = false
   }
@@ -179,17 +181,16 @@ watch(
         id="hero-heading"
         class="mb-4 text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl dark:text-white"
       >
-        IT Tools Directory
+        {{ t('home.title') }}
       </h1>
       <p
         class="mx-auto mb-10 max-w-2xl text-base text-slate-600 sm:text-lg dark:text-slate-400"
       >
-        Discover curated tools for building, designing, and shipping faster —
-        filter, sort, and save your favorites.
+        {{ t('home.subtitle') }}
       </p>
 
       <div class="relative mx-auto max-w-xl">
-        <label for="tool-search" class="sr-only">Search tools</label>
+        <label for="tool-search" class="sr-only">{{ t('home.searchLabel') }}</label>
         <span
           class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400"
           aria-hidden="true"
@@ -214,7 +215,7 @@ watch(
           v-model="searchQuery"
           type="search"
           autocomplete="off"
-          placeholder="Search by title or description…"
+          :placeholder="t('home.searchPlaceholder')"
           class="w-full rounded-2xl border border-slate-200 bg-white py-3.5 pl-12 pr-4 text-sm text-slate-900 shadow-sm ring-1 ring-slate-900/5 transition placeholder:text-slate-400 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-500/30 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-sky-500 dark:focus:ring-sky-400/25"
         />
       </div>
@@ -224,7 +225,7 @@ watch(
     <section
       id="browse"
       class="mx-auto mt-14 max-w-7xl px-4 sm:mt-16 sm:px-6 lg:px-8"
-      aria-label="Filter and sort tools"
+      :aria-label="t('home.filtersAria')"
     >
       <div
         class="flex flex-col gap-4 rounded-2xl border border-slate-200/90 bg-white/90 p-4 shadow-sm ring-1 ring-slate-900/5 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/50 dark:ring-white/5 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:p-5"
@@ -233,7 +234,7 @@ watch(
           <span
             class="mr-1 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
           >
-            Category
+            {{ t('home.category') }}
           </span>
           <AppButton
             v-for="cat in CATEGORIES"
@@ -243,7 +244,7 @@ watch(
             :variant="categoryFilter === cat ? 'primary' : 'outline'"
             @click="categoryFilter = cat"
           >
-            {{ cat }}
+            {{ t(`categories.${cat}`) }}
           </AppButton>
         </div>
 
@@ -252,7 +253,7 @@ watch(
             for="sort-select"
             class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
           >
-            Sort by
+            {{ t('sort.sortBy') }}
           </label>
           <div class="relative">
             <select
@@ -319,10 +320,10 @@ watch(
         class="rounded-2xl border border-dashed border-slate-300 bg-slate-50/80 px-6 py-16 text-center dark:border-slate-700 dark:bg-slate-900/40"
       >
         <p class="text-lg font-medium text-slate-700 dark:text-slate-200">
-          No tools match your filters.
+          {{ t('home.noResultsTitle') }}
         </p>
         <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
-          Try another category or clear your search.
+          {{ t('home.noResultsText') }}
         </p>
       </div>
 

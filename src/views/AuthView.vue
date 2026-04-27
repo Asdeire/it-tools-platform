@@ -9,10 +9,12 @@ import { auth } from '../firebase/config.js'
 import AppButton from '../components/layout/AppButton.vue'
 import { useAuth } from '../store/auth.js'
 import { RouterLink } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 
 const router = useRouter()
 const route = useRoute()
 const { isAuthenticated } = useAuth()
+const { t } = useI18n()
 
 const mode = ref('login') // 'login' | 'register'
 const email = ref('')
@@ -21,17 +23,17 @@ const busy = ref(false)
 const errorMsg = ref('')
 
 const title = computed(() =>
-  mode.value === 'login' ? 'Welcome back' : 'Create your account',
+  mode.value === 'login' ? t('auth.welcomeBack') : t('auth.createAccount'),
 )
 
 const subtitle = computed(() =>
   mode.value === 'login'
-    ? 'Sign in to manage your tools and favorites.'
-    : 'Register to submit tools and like your favorites.',
+    ? t('auth.loginSubtitle')
+    : t('auth.registerSubtitle'),
 )
 
 const submitLabel = computed(() =>
-  mode.value === 'login' ? 'Login' : 'Register',
+  mode.value === 'login' ? t('auth.login') : t('auth.register'),
 )
 
 function toggleMode(nextMode) {
@@ -55,12 +57,12 @@ async function onSubmit() {
     await router.replace(redirect)
   } catch (e) {
     const code = String(e?.code || '')
-    if (code.includes('auth/invalid-email')) errorMsg.value = 'Please enter a valid email.'
-    else if (code.includes('auth/missing-password')) errorMsg.value = 'Please enter a password.'
-    else if (code.includes('auth/weak-password')) errorMsg.value = 'Password should be at least 6 characters.'
-    else if (code.includes('auth/email-already-in-use')) errorMsg.value = 'That email is already registered.'
-    else if (code.includes('auth/invalid-credential') || code.includes('auth/wrong-password')) errorMsg.value = 'Incorrect email or password.'
-    else errorMsg.value = 'Authentication failed. Please try again.'
+    if (code.includes('auth/invalid-email')) errorMsg.value = t('auth.errors.invalidEmail')
+    else if (code.includes('auth/missing-password')) errorMsg.value = t('auth.errors.missingPassword')
+    else if (code.includes('auth/weak-password')) errorMsg.value = t('auth.errors.weakPassword')
+    else if (code.includes('auth/email-already-in-use')) errorMsg.value = t('auth.errors.emailInUse')
+    else if (code.includes('auth/invalid-credential') || code.includes('auth/wrong-password')) errorMsg.value = t('auth.errors.invalidCredentials')
+    else errorMsg.value = t('auth.errors.failed')
   } finally {
     busy.value = false
   }
@@ -98,7 +100,7 @@ if (isAuthenticated.value) {
               "
               @click="toggleMode('login')"
             >
-              Login
+              {{ t('auth.login') }}
             </button>
             <button
               type="button"
@@ -110,14 +112,14 @@ if (isAuthenticated.value) {
               "
               @click="toggleMode('register')"
             >
-              Register
+              {{ t('auth.register') }}
             </button>
           </div>
 
           <form class="space-y-4" @submit.prevent="onSubmit">
             <div>
               <label for="email" class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-200">
-                Email
+                {{ t('auth.email') }}
               </label>
               <input
                 id="email"
@@ -126,13 +128,13 @@ if (isAuthenticated.value) {
                 autocomplete="email"
                 required
                 class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm ring-1 ring-slate-900/5 transition placeholder:text-slate-400 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-500/30 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100 dark:placeholder:text-slate-500 dark:ring-white/5 dark:focus:border-sky-500 dark:focus:ring-sky-400/25"
-                placeholder="you@company.com"
+                :placeholder="t('auth.emailPlaceholder')"
               />
             </div>
 
             <div>
               <label for="password" class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-200">
-                Password
+                {{ t('auth.password') }}
               </label>
               <input
                 id="password"
@@ -142,7 +144,7 @@ if (isAuthenticated.value) {
                 required
                 minlength="6"
                 class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm ring-1 ring-slate-900/5 transition placeholder:text-slate-400 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-500/30 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100 dark:placeholder:text-slate-500 dark:ring-white/5 dark:focus:border-sky-500 dark:focus:ring-sky-400/25"
-                placeholder="At least 6 characters"
+                :placeholder="t('auth.passwordPlaceholder')"
               />
             </div>
 
@@ -151,12 +153,12 @@ if (isAuthenticated.value) {
             </div>
 
             <AppButton block :disabled="busy" type="submit" variant="primary" size="lg">
-              <span v-if="busy">Please wait…</span>
+              <span v-if="busy">{{ t('auth.pleaseWait') }}</span>
               <span v-else>{{ submitLabel }}</span>
             </AppButton>
 
             <p class="text-center text-xs text-slate-500 dark:text-slate-400">
-              By continuing, you agree to keep things tidy and respectful.
+              {{ t('auth.agreement') }}
             </p>
           </form>
         </div>
@@ -164,7 +166,7 @@ if (isAuthenticated.value) {
 
       <div class="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
         <RouterLink to="/home" class="font-medium text-sky-700 hover:text-sky-800 dark:text-sky-300 dark:hover:text-sky-200">
-          Back to Home
+          {{ t('common.backToHome') }}
         </RouterLink>
       </div>
     </div>

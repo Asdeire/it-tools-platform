@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { getToolById } from '../firebase/api.js'
 
 const route = useRoute()
@@ -8,11 +9,12 @@ const route = useRoute()
 const loading = ref(true)
 const errorMsg = ref('')
 const tool = ref(null)
+const { t } = useI18n()
 
 const uploaderName = computed(() => {
   const email = String(tool.value?.authorEmail ?? '').trim()
   if (email) return email
-  return 'Unknown uploader'
+  return t('common.unknownUploader')
 })
 
 const toolImage = computed(() => {
@@ -35,20 +37,20 @@ onMounted(async () => {
   try {
     const id = String(route.params.id ?? '')
     if (!id) {
-      errorMsg.value = 'Tool id is missing.'
+      errorMsg.value = t('tool.idMissing')
       return
     }
 
     const data = await getToolById(id)
     if (!data) {
-      errorMsg.value = 'Tool not found.'
+      errorMsg.value = t('tool.notFound')
       return
     }
 
     tool.value = data
   } catch (e) {
     console.error(e)
-    errorMsg.value = 'Could not load this tool. Please try again.'
+    errorMsg.value = t('tool.loadError')
   } finally {
     loading.value = false
   }
@@ -62,7 +64,7 @@ onMounted(async () => {
         to="/home"
         class="inline-flex items-center text-sm font-medium text-sky-700 no-underline hover:text-sky-800 dark:text-sky-300 dark:hover:text-sky-200"
       >
-        ← Back to tools
+        ← {{ t('common.backToTools') }}
       </RouterLink>
     </div>
 
@@ -85,7 +87,7 @@ onMounted(async () => {
     >
       <img
         :src="toolImage"
-        :alt="`${tool.title || 'Tool'} image`"
+        :alt="t('tool.imageAlt', { title: tool.title || t('tool.untitledTool') })"
         class="h-64 w-full object-cover sm:h-80"
       />
 
@@ -93,15 +95,15 @@ onMounted(async () => {
         <p
           class="mb-3 inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium uppercase tracking-wide text-slate-600 dark:bg-slate-800 dark:text-slate-300"
         >
-          {{ tool.category || 'General' }}
+          {{ tool.category || t('categories.general') }}
         </p>
 
         <h1 class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-          {{ tool.title || 'Untitled tool' }}
+          {{ tool.title || t('tool.untitledTool') }}
         </h1>
 
         <p class="mt-4 whitespace-pre-line text-base leading-relaxed text-slate-600 dark:text-slate-300">
-          {{ tool.description || 'No description yet.' }}
+          {{ tool.description || t('tool.noDescription') }}
         </p>
 
         <div v-if="toolLink" class="mt-5">
@@ -111,13 +113,13 @@ onMounted(async () => {
             rel="noopener noreferrer"
             class="inline-flex items-center rounded-xl bg-sky-50 px-3 py-2 text-sm font-medium text-sky-700 no-underline transition hover:bg-sky-100 hover:text-sky-800 dark:bg-sky-900/30 dark:text-sky-300 dark:hover:bg-sky-900/50 dark:hover:text-sky-200"
           >
-            Open tool link
+            {{ t('tool.openLink') }}
           </a>
         </div>
 
         <div class="mt-6 border-t border-slate-200 pt-4 dark:border-slate-700">
           <p class="text-sm text-slate-500 dark:text-slate-400">
-            Uploaded by
+            {{ t('common.uploadedBy') }}
             <span class="font-semibold text-slate-900 dark:text-white">{{ uploaderName }}</span>
           </p>
         </div>

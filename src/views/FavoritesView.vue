@@ -1,10 +1,12 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import ToolCard from '../components/tools/ToolCard.vue'
 import { getTools, getUserLikedToolIds, toggleLike } from '../firebase/api.js'
 import { useAuth } from '../store/auth.js'
 
 const { currentUser } = useAuth()
+const { t } = useI18n()
 
 const loading = ref(true)
 const errorMsg = ref('')
@@ -28,7 +30,7 @@ async function refresh() {
     tools.value = allTools
     likedIds.value = ids
   } catch (e) {
-    errorMsg.value = 'Could not load favorites. Please try again.'
+    errorMsg.value = t('favorites.loadError')
   } finally {
     loading.value = false
   }
@@ -97,10 +99,10 @@ onMounted(refresh)
   <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
     <div class="mb-8">
       <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-        Favorites
+        {{ t('favorites.title') }}
       </h1>
       <p class="mt-2 max-w-2xl text-sm text-slate-600 dark:text-slate-400">
-        Tools you’ve liked, all in one place.
+        {{ t('favorites.subtitle') }}
       </p>
     </div>
 
@@ -121,10 +123,10 @@ onMounted(refresh)
       class="rounded-2xl border border-dashed border-slate-300 bg-slate-50/80 px-6 py-16 text-center dark:border-slate-700 dark:bg-slate-900/40"
     >
       <p class="text-lg font-medium text-slate-700 dark:text-slate-200">
-        No favorites yet.
+        {{ t('favorites.emptyTitle') }}
       </p>
       <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
-        Like tools on the home page and they’ll show up here.
+        {{ t('favorites.emptyText') }}
       </p>
     </div>
 

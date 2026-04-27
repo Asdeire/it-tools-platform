@@ -1,0 +1,131 @@
+{
+  "app": {
+    "navAria": "Main",
+    "langAria": "Language",
+    "languageShort": {
+      "en": "EN",
+      "uk": "UA"
+    }
+  },
+  "nav": {
+    "home": "Home",
+    "myTools": "My Tools",
+    "favorites": "Favorites",
+    "login": "Login",
+    "logout": "Logout"
+  },
+  "common": {
+    "loading": "Loading...",
+    "close": "Close",
+    "save": "Save",
+    "saving": "Saving...",
+    "backToHome": "Back to Home",
+    "backToTools": "Back to tools",
+    "uploadedBy": "Uploaded by",
+    "unknownUploader": "Unknown uploader",
+    "language": "Language"
+  },
+  "categories": {
+    "all": "All",
+    "ai": "AI",
+    "dev": "Dev",
+    "design": "Design",
+    "general": "General"
+  },
+  "sort": {
+    "newest": "Newest",
+    "popular": "Popular",
+    "sortBy": "Sort by"
+  },
+  "home": {
+    "title": "IT Tools Directory",
+    "subtitle": "Discover curated tools for building, designing, and shipping faster — filter, sort, and save your favorites.",
+    "searchLabel": "Search tools",
+    "searchPlaceholder": "Search by title or description...",
+    "filtersAria": "Filter and sort tools",
+    "category": "Category",
+    "loadError": "Could not load tools. Check your connection and try again.",
+    "noResultsTitle": "No tools match your filters.",
+    "noResultsText": "Try another category or clear your search."
+  },
+  "auth": {
+    "welcomeBack": "Welcome back",
+    "createAccount": "Create your account",
+    "loginSubtitle": "Sign in to manage your tools and favorites.",
+    "registerSubtitle": "Register to submit tools and like your favorites.",
+    "login": "Login",
+    "register": "Register",
+    "email": "Email",
+    "password": "Password",
+    "emailPlaceholder": "you@company.com",
+    "passwordPlaceholder": "At least 6 characters",
+    "pleaseWait": "Please wait...",
+    "agreement": "By continuing, you agree to keep things tidy and respectful.",
+    "errors": {
+      "invalidEmail": "Please enter a valid email.",
+      "missingPassword": "Please enter a password.",
+      "weakPassword": "Password should be at least 6 characters.",
+      "emailInUse": "That email is already registered.",
+      "invalidCredentials": "Incorrect email or password.",
+      "failed": "Authentication failed. Please try again."
+    }
+  },
+  "favorites": {
+    "title": "Favorites",
+    "subtitle": "Tools you have liked, all in one place.",
+    "loadError": "Could not load favorites. Please try again.",
+    "emptyTitle": "No favorites yet.",
+    "emptyText": "Like tools on the home page and they will show up here."
+  },
+  "myTools": {
+    "title": "My Submitted Tools",
+    "subtitle": "Create, edit, and manage tools you have submitted.",
+    "addTool": "+ Add Tool",
+    "loadError": "Could not load your tools. Please try again.",
+    "emptyTitle": "No tools yet.",
+    "emptyText": "Click \"Add Tool\" to submit your first one.",
+    "createTitle": "Submit a new tool",
+    "editTitle": "Edit tool",
+    "modalHint": "Keep it concise and helpful.",
+    "fieldTitle": "Title",
+    "fieldTitlePlaceholder": "e.g. JSON Formatter",
+    "fieldDescription": "Description",
+    "fieldDescriptionPlaceholder": "What does it do, and why is it useful?",
+    "fieldCategory": "Category",
+    "fieldLink": "Link",
+    "fieldLinkPlaceholder": "https://...",
+    "uploadImage": "Upload image",
+    "uploadHint": "Image is uploaded to Cloudinary and URL is saved in the tool.",
+    "uploadCurrentHint": "Current image is already set. Select a new file to replace it.",
+    "uploadSelected": "Selected: {name}",
+    "uploadErrors": {
+      "chooseImage": "Please choose an image file.",
+      "tooLarge": "Image is too large. Max size is 5MB."
+    },
+    "validation": {
+      "enterTitle": "Please enter a title.",
+      "enterDescription": "Please enter a description.",
+      "saveFailed": "Could not save. Please try again.",
+      "deleteFailed": "Could not delete. Please try again.",
+      "deleteConfirm": "Delete \"{title}\"?",
+      "fallbackTitle": "this tool"
+    }
+  },
+  "tool": {
+    "openLink": "Open tool link",
+    "untitled": "Untitled",
+    "untitledTool": "Untitled tool",
+    "noDescription": "No description yet.",
+    "imageAlt": "{title} image",
+    "previewAlt": "{title} preview",
+    "like": "Like",
+    "liked": "Liked",
+    "likes_one": "{count} like",
+    "likes_other": "{count} likes",
+    "edit": "Edit",
+    "delete": "Delete",
+    "idMissing": "Tool id is missing.",
+    "notFound": "Tool not found.",
+    "loadError": "Could not load this tool. Please try again."
+  }
+}

@@ -1,5 +1,6 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import AppButton from '../components/layout/AppButton.vue'
 import ToolCard from '../components/tools/ToolCard.vue'
 import {
@@ -12,6 +13,7 @@ import {
 import { useAuth } from '../store/auth.js'
 
 const { currentUser } = useAuth()
+const { t } = useI18n()
 
 const loading = ref(true)
 const errorMsg = ref('')
@@ -35,7 +37,7 @@ const form = ref({
 const categories = ['AI', 'Dev', 'Design']
 
 const modalTitle = computed(() =>
-  modalMode.value === 'create' ? 'Submit a new tool' : 'Edit tool',
+  modalMode.value === 'create' ? t('myTools.createTitle') : t('myTools.editTitle'),
 )
 
 function openCreateModal() {
@@ -84,14 +86,14 @@ function onImageFileChange(event) {
   }
 
   if (!String(file.type || '').startsWith('image/')) {
-    imageUploadError.value = 'Please choose an image file.'
+    imageUploadError.value = t('myTools.uploadErrors.chooseImage')
     selectedImageFile.value = null
     return
   }
 
   const maxSizeBytes = 5 * 1024 * 1024
   if (file.size > maxSizeBytes) {
-    imageUploadError.value = 'Image is too large. Max size is 5MB.'
+    imageUploadError.value = t('myTools.uploadErrors.tooLarge')
     selectedImageFile.value = null
     return
   }
@@ -105,7 +107,7 @@ async function refresh() {
   try {
     tools.value = await getUserTools(currentUser.value.uid)
   } catch (e) {
-    errorMsg.value = 'Could not load your tools. Please try again.'
+    errorMsg.value = t('myTools.loadError')
   } finally {
     loading.value = false
   }
@@ -156,11 +158,11 @@ async function onSave() {
     existingImageUrl.value = ''
   } catch (e) {
     if (String(e?.message || '').includes('missing_title')) {
-      errorMsg.value = 'Please enter a title.'
+      errorMsg.value = t('myTools.validation.enterTitle')
     } else if (String(e?.message || '').includes('missing_description')) {
-      errorMsg.value = 'Please enter a description.'
+      errorMsg.value = t('myTools.validation.enterDescription')
     } else {
-      errorMsg.value = 'Could not save. Please try again.'
+      errorMsg.value = t('myTools.validation.saveFailed')
     }
   } finally {
     saving.value = false
@@ -168,14 +170,18 @@ async function onSave() {
 }
 
 async function onDelete(tool) {
-  const ok = confirm(`Delete "${tool.title || 'this tool'}"?`)
+  const ok = confirm(
+    t('myTools.validation.deleteConfirm', {
+      title: tool.title || t('myTools.validation.fallbackTitle'),
+    }),
+  )
   if (!ok) return
 
   try {
     await deleteTool(tool.id)
     tools.value = tools.value.filter((t) => t.id !== tool.id)
   } catch (e) {
-    alert('Could not delete. Please try again.')
+    alert(t('myTools.validation.deleteFailed'))
   }
 }
 
@@ -187,15 +193,15 @@ onMounted(refresh)
     <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div>
         <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-          My Submitted Tools
+          {{ t('myTools.title') }}
         </h1>
         <p class="mt-2 max-w-2xl text-sm text-slate-600 dark:text-slate-400">
-          Create, edit, and manage tools you’ve submitted.
+          {{ t('myTools.subtitle') }}
         </p>
       </div>
 
       <AppButton variant="primary" size="md" @click="openCreateModal">
-        + Add Tool
+        {{ t('myTools.addTool') }}
       </AppButton>
     </div>
 
@@ -216,10 +222,10 @@ onMounted(refresh)
       class="rounded-2xl border border-dashed border-slate-300 bg-slate-50/80 px-6 py-16 text-center dark:border-slate-700 dark:bg-slate-900/40"
     >
       <p class="text-lg font-medium text-slate-700 dark:text-slate-200">
-        No tools yet.
+        {{ t('myTools.emptyTitle') }}
       </p>
       <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
-        Click “Add Tool” to submit your first one.
+        {{ t('myTools.emptyText') }}
       </p>
     </div>
 
@@ -242,7 +248,7 @@ onMounted(refresh)
       <button
         type="button"
         class="absolute inset-0 bg-slate-950/50 backdrop-blur-sm"
-        aria-label="Close modal"
+        :aria-label="t('common.close')"
         @click="closeModal"
       />
 
@@ -258,67 +264,69 @@ onMounted(refresh)
                 {{ modalTitle }}
               </h2>
               <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">
-                Keep it concise and helpful.
+                {{ t('myTools.modalHint') }}
               </p>
             </div>
-            <AppButton variant="ghost" size="sm" @click="closeModal">Close</AppButton>
+            <AppButton variant="ghost" size="sm" @click="closeModal">{{ t('common.close') }}</AppButton>
           </div>
 
           <form class="space-y-4" @submit.prevent="onSave">
             <div>
               <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-200">
-                Title
+                {{ t('myTools.fieldTitle') }}
               </label>
               <input
                 v-model="form.title"
                 required
                 class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm ring-1 ring-slate-900/5 transition focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-500/30 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100 dark:ring-white/5 dark:focus:border-sky-500 dark:focus:ring-sky-400/25"
-                placeholder="e.g. JSON Formatter"
+                :placeholder="t('myTools.fieldTitlePlaceholder')"
               />
             </div>
 
             <div>
               <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-200">
-                Description
+                {{ t('myTools.fieldDescription') }}
               </label>
               <textarea
                 v-model="form.description"
                 required
                 rows="4"
                 class="w-full resize-none rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm ring-1 ring-slate-900/5 transition focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-500/30 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100 dark:ring-white/5 dark:focus:border-sky-500 dark:focus:ring-sky-400/25"
-                placeholder="What does it do, and why is it useful?"
+                :placeholder="t('myTools.fieldDescriptionPlaceholder')"
               />
             </div>
 
             <div class="grid gap-4 sm:grid-cols-2">
               <div>
                 <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-200">
-                  Category
+                  {{ t('myTools.fieldCategory') }}
                 </label>
                 <select
                   v-model="form.category"
                   class="w-full appearance-none rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-900 shadow-sm ring-1 ring-slate-900/5 transition focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-500/30 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100 dark:ring-white/5 dark:focus:border-sky-500 dark:focus:ring-sky-400/25"
                 >
-                  <option v-for="c in categories" :key="c" :value="c">{{ c }}</option>
+                  <option v-for="c in categories" :key="c" :value="c">
+                    {{ t(`categories.${String(c).toLowerCase()}`) }}
+                  </option>
                 </select>
               </div>
 
               <div>
                 <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-200">
-                  Link
+                  {{ t('myTools.fieldLink') }}
                 </label>
                 <input
                   v-model="form.link"
                   type="url"
                   class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm ring-1 ring-slate-900/5 transition focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-500/30 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100 dark:ring-white/5 dark:focus:border-sky-500 dark:focus:ring-sky-400/25"
-                  placeholder="https://…"
+                  :placeholder="t('myTools.fieldLinkPlaceholder')"
                 />
               </div>
             </div>
 
             <div>
               <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-200">
-                Upload image
+                {{ t('myTools.uploadImage') }}
               </label>
               <input
                 type="file"
@@ -327,19 +335,19 @@ onMounted(refresh)
                 @change="onImageFileChange"
               />
               <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                Image is uploaded to Cloudinary and URL is saved in the tool.
+                {{ t('myTools.uploadHint') }}
               </p>
               <p
                 v-if="existingImageUrl && !selectedImageFile"
                 class="mt-1 text-xs text-slate-500 dark:text-slate-400"
               >
-                Current image is already set. Select a new file to replace it.
+                {{ t('myTools.uploadCurrentHint') }}
               </p>
               <p
                 v-if="selectedImageFile"
                 class="mt-1 text-xs font-medium text-slate-600 dark:text-slate-300"
               >
-                Selected: {{ selectedImageFile.name }}
+                {{ t('myTools.uploadSelected', { name: selectedImageFile.name }) }}
               </p>
               <p
                 v-if="imageUploadError"
@@ -351,8 +359,8 @@ onMounted(refresh)
 
             <div class="pt-2">
               <AppButton block size="lg" type="submit" :disabled="saving">
-                <span v-if="saving">Saving…</span>
-                <span v-else>Save</span>
+                <span v-if="saving">{{ t('common.saving') }}</span>
+                <span v-else>{{ t('common.save') }}</span>
               </AppButton>
             </div>
           </form>

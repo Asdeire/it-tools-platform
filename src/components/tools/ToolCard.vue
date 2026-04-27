@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import AppButton from '../layout/AppButton.vue'
 
 const props = defineProps({
@@ -24,9 +25,14 @@ const props = defineProps({
 
 const emit = defineEmits(['toggle-like', 'edit', 'delete'])
 const router = useRouter()
+const { t } = useI18n()
 const cardImage = computed(() => {
   const imageUrl = String(props.tool?.imageUrl ?? '').trim()
   return imageUrl || 'https://placehold.co/800x450?text=Tool+Image'
+})
+const likesText = computed(() => {
+  const count = Number(props.tool?.likesCount) || 0
+  return t('tool.likes', count, { count })
 })
 
 function openDetails() {
@@ -57,7 +63,7 @@ function onDeleteClick() {
   >
     <img
       :src="cardImage"
-      :alt="`${tool.title || 'Tool'} preview`"
+      :alt="t('tool.previewAlt', { title: tool.title || t('tool.untitledTool') })"
       class="h-40 w-full object-cover"
       loading="lazy"
     />
@@ -66,25 +72,24 @@ function onDeleteClick() {
         <span
           class="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium uppercase tracking-wide text-slate-600 dark:bg-slate-800 dark:text-slate-300"
         >
-          {{ tool.category || 'General' }}
+          {{ tool.category || t('categories.general') }}
         </span>
         <span
           class="text-xs font-medium tabular-nums text-slate-500 dark:text-slate-400"
         >
-          {{ Number(tool.likesCount) || 0 }}
-          {{ Number(tool.likesCount) === 1 ? 'like' : 'likes' }}
+          {{ likesText }}
         </span>
       </div>
 
       <h3
         class="mb-2 text-lg font-semibold tracking-tight text-slate-900 transition group-hover:text-sky-700 dark:text-white dark:group-hover:text-sky-300"
       >
-        {{ tool.title || 'Untitled' }}
+        {{ tool.title || t('tool.untitled') }}
       </h3>
       <p
         class="mb-6 flex-1 text-sm leading-relaxed text-slate-600 dark:text-slate-400"
       >
-        {{ tool.description || 'No description yet.' }}
+        {{ tool.description || t('tool.noDescription') }}
       </p>
 
       <div
@@ -109,7 +114,7 @@ function onDeleteClick() {
                 d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
               />
             </svg>
-            {{ liked ? 'Liked' : 'Like' }}
+            {{ liked ? t('tool.liked') : t('tool.like') }}
           </AppButton>
         </div>
 
@@ -123,7 +128,7 @@ function onDeleteClick() {
             size="sm"
             @click.stop="onEditClick"
           >
-            Edit
+            {{ t('tool.edit') }}
           </AppButton>
           <AppButton
             class="flex-1 sm:flex-none"
@@ -131,7 +136,7 @@ function onDeleteClick() {
             size="sm"
             @click.stop="onDeleteClick"
           >
-            Delete
+            {{ t('tool.delete') }}
           </AppButton>
         </div>
       </div>
