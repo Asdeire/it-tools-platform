@@ -1,7 +1,10 @@
 import { computed } from 'vue'
 import { defineStore, storeToRefs } from 'pinia'
-import { onAuthStateChanged, signOut } from 'firebase/auth'
+import { GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth'
 import { auth } from '../firebase/config.js'
+
+const googleProvider = new GoogleAuthProvider()
+googleProvider.setCustomParameters({ prompt: 'select_account' })
 
 let _unsubscribe = null
 let _readyResolve = null
@@ -57,6 +60,10 @@ export function useAuth() {
     currentUser,
     isAuthenticated,
   }
+}
+
+export async function signInWithGoogle() {
+  await signInWithPopup(auth, googleProvider)
 }
 
 export async function logout() {

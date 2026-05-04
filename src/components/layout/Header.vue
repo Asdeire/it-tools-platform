@@ -56,7 +56,7 @@ function onLocaleChange(event) {
           <div class="hidden items-center gap-2 sm:flex">
             <span class="max-w-[14rem] truncate text-xs font-medium text-slate-500 dark:text-slate-400"
               :title="currentUser?.email || ''">
-              {{ currentUser?.email }}
+              {{ currentUser?.displayName || currentUser?.email }}
             </span>
             <AppButton variant="outline" size="sm" @click="onLogout">
               {{ t('nav.logout') }}

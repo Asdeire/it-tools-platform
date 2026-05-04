@@ -57,9 +57,11 @@
     "register": "Register",
     "email": "Email",
     "password": "Password",
-    "emailPlaceholder": "you@company.com",
+    "emailPlaceholder": "you{'@'}company.com",
     "passwordPlaceholder": "At least 6 characters",
     "pleaseWait": "Please wait...",
+    "continueWithGoogle": "Continue with Google",
+    "orEmail": "Or with email",
     "agreement": "By continuing, you agree to keep things tidy and respectful.",
     "errors": {
       "invalidEmail": "Please enter a valid email.",
@@ -67,6 +69,10 @@
       "weakPassword": "Password should be at least 6 characters.",
       "emailInUse": "That email is already registered.",
       "invalidCredentials": "Incorrect email or password.",
+      "popupClosed": "Sign-in was cancelled. Try again when you are ready.",
+      "popupBlocked": "Your browser blocked the sign-in popup. Allow popups for this site and try again.",
+      "accountExistsDifferent": "An account already exists for this email with a different sign-in method. Use email/password or link accounts in Firebase.",
+      "providerDisabled": "Google sign-in is not enabled for this app. Enable the Google provider in the Firebase console.",
       "failed": "Authentication failed. Please try again."
     }
   },
