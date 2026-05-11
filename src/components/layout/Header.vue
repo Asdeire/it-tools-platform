@@ -5,7 +5,7 @@ import AppButton from './AppButton.vue'
 import { logout, useAuth } from '../../store/auth.js'
 import { setLocale } from '../../i18n/index.js'
 
-const { currentUser, isAuthenticated } = useAuth()
+const { currentUser, isAuthenticated, isModerator } = useAuth()
 const { t, locale } = useI18n()
 
 async function onLogout() {
@@ -54,6 +54,12 @@ function onLocaleChange(event) {
           </RouterLink>
 
           <div class="hidden items-center gap-2 sm:flex">
+            <span
+              v-if="isModerator"
+              class="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-900 dark:bg-amber-900/50 dark:text-amber-100"
+            >
+              {{ t('nav.moderator') }}
+            </span>
             <span class="max-w-[14rem] truncate text-xs font-medium text-slate-500 dark:text-slate-400"
               :title="currentUser?.email || ''">
               {{ currentUser?.displayName || currentUser?.email }}

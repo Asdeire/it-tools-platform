@@ -10,13 +10,47 @@ import {
   query,
   runTransaction,
   serverTimestamp,
+  setDoc,
   updateDoc,
   where,
 } from 'firebase/firestore'
 import { db } from './config.js'
 
+export const USER_ROLE = {
+  USER: 'user',
+  MODERATOR: 'moderator',
+}
+
 const toolsCol = () => collection(db, 'tools')
 const likesCol = () => collection(db, 'likes')
+
+/**
+ * Ensures `users/{uid}` exists with default role `user`.
+ * Promote moderators in Firebase Console: set `role` to `moderator` on that document.
+ *
+ * @param {string} uid
+ * @param {string | null | undefined} email
+ * @returns {Promise<'user' | 'moderator'>}
+ */
+export async function ensureUserProfile(uid, email) {
+  const ref = doc(db, 'users', uid)
+  try {
+    const snap = await getDoc(ref)
+    if (!snap.exists()) {
+      await setDoc(ref, {
+        email: email ?? null,
+        role: USER_ROLE.USER,
+        createdAt: serverTimestamp(),
+      })
+      return USER_ROLE.USER
+    }
+    const role = snap.data()?.role
+    return role === USER_ROLE.MODERATOR ? USER_ROLE.MODERATOR : USER_ROLE.USER
+  } catch (err) {
+    console.error('[ensureUserProfile]', err)
+    throw err
+  }
+}
 
 function likeDocId(userId, toolId) {
   return `${userId}_${toolId}`

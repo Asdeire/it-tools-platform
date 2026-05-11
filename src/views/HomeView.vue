@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import AppButton from '../components/layout/AppButton.vue'
 import ToolCard from '../components/tools/ToolCard.vue'
-import { getTools, getUserLikedToolIds, toggleLike } from '../firebase/api.js'
+import { deleteTool, getTools, getUserLikedToolIds, toggleLike } from '../firebase/api.js'
 import { useAuth } from '../store/auth.js'
 
 const CATEGORIES = ['all', 'ai', 'dev', 'design']
@@ -18,7 +18,8 @@ const categoryFilter = ref('all')
 const sortBy = ref('newest')
 
 const router = useRouter()
-const { currentUser } = useAuth()
+const { currentUser, isModerator } = useAuth()
+const deletingToolId = ref(null)
 const { t } = useI18n()
 
 const likedToolIds = ref([])
@@ -135,6 +136,31 @@ async function handleToggleLike(tool) {
   }
 }
 
+async function handleModeratorDelete(tool) {
+  if (!isModerator.value) return
+  const ok = confirm(
+    t('home.moderatorDeleteConfirm', {
+      title: tool.title || t('tool.untitledTool'),
+    }),
+  )
+  if (!ok) return
+
+  const id = tool.id
+  deletingToolId.value = id
+  try {
+    await deleteTool(id)
+    tools.value = tools.value.filter((t) => t.id !== id)
+    const liked = new Set(likedToolIds.value)
+    liked.delete(id)
+    likedToolIds.value = [...liked]
+  } catch (e) {
+    console.error(e)
+    alert(t('home.moderatorDeleteFailed'))
+  } finally {
+    deletingToolId.value = null
+  }
+}
+
 async function loadLikedState() {
   if (currentUser.value?.uid) {
     try {
@@ -221,10 +247,22 @@ watch(
       </div>
     </section>
 
+    <div
+      v-if="isModerator"
+      class="mx-auto mt-8 max-w-7xl px-4 sm:px-6 lg:px-8"
+      role="status"
+    >
+      <p
+        class="rounded-2xl border border-amber-200/90 bg-amber-50 px-4 py-3 text-sm text-amber-950 dark:border-amber-800/80 dark:bg-amber-950/40 dark:text-amber-100"
+      >
+        {{ t('home.moderatorBanner') }}
+      </p>
+    </div>
+
     <!-- Filters & sort -->
     <section
       id="browse"
-      class="mx-auto mt-14 max-w-7xl px-4 sm:mt-16 sm:px-6 lg:px-8"
+      class="mx-auto mt-8 max-w-7xl px-4 sm:mt-8 sm:px-6 lg:px-8"
       :aria-label="t('home.filtersAria')"
     >
       <div
@@ -337,7 +375,10 @@ watch(
           :tool="tool"
           :liked="isLiked(tool.id)"
           :like-pending="pendingLikeToolId === tool.id"
+          :show-moderator-delete="isModerator"
+          :moderator-delete-pending="deletingToolId === tool.id"
           @toggle-like="handleToggleLike(tool)"
+          @delete="handleModeratorDelete(tool)"
         />
       </div>
     </section>

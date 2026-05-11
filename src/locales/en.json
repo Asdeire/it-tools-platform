@@ -12,7 +12,8 @@
     "myTools": "My Tools",
     "favorites": "Favorites",
     "login": "Login",
-    "logout": "Logout"
+    "logout": "Logout",
+    "moderator": "Moderator"
   },
   "common": {
     "loading": "Loading...",
@@ -46,7 +47,10 @@
     "category": "Category",
     "loadError": "Could not load tools. Check your connection and try again.",
     "noResultsTitle": "No tools match your filters.",
-    "noResultsText": "Try another category or clear your search."
+    "noResultsText": "Try another category or clear your search.",
+    "moderatorBanner": "You are signed in as a moderator: you can browse the catalog and delete any listing.",
+    "moderatorDeleteConfirm": "Remove \"{title}\" from the catalog? This cannot be undone.",
+    "moderatorDeleteFailed": "Could not delete this listing. Check your Firebase permissions."
   },
   "auth": {
     "welcomeBack": "Welcome back",
@@ -130,6 +134,7 @@
     "likes_other": "{count} likes",
     "edit": "Edit",
     "delete": "Delete",
+    "moderatorDelete": "Delete (moderator)",
     "idMissing": "Tool id is missing.",
     "notFound": "Tool not found.",
     "loadError": "Could not load this tool. Please try again."

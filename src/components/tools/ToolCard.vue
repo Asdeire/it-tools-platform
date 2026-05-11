@@ -21,6 +21,14 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  showModeratorDelete: {
+    type: Boolean,
+    default: false,
+  },
+  moderatorDeletePending: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const emit = defineEmits(['toggle-like', 'edit', 'delete'])
@@ -137,6 +145,21 @@ function onDeleteClick() {
             @click.stop="onDeleteClick"
           >
             {{ t('tool.delete') }}
+          </AppButton>
+        </div>
+
+        <div
+          v-else-if="showModeratorDelete"
+          class="flex w-full gap-2 sm:w-auto sm:justify-end"
+        >
+          <AppButton
+            class="flex-1 sm:flex-none"
+            variant="outline"
+            size="sm"
+            :disabled="moderatorDeletePending"
+            @click.stop="onDeleteClick"
+          >
+            {{ t('tool.moderatorDelete') }}
           </AppButton>
         </div>
       </div>

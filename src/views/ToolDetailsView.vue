@@ -1,15 +1,20 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
-import { RouterLink, useRoute } from 'vue-router'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { getToolById } from '../firebase/api.js'
+import AppButton from '../components/layout/AppButton.vue'
+import { deleteTool, getToolById } from '../firebase/api.js'
+import { useAuth } from '../store/auth.js'
 
 const route = useRoute()
+const router = useRouter()
 
 const loading = ref(true)
 const errorMsg = ref('')
 const tool = ref(null)
+const deleteBusy = ref(false)
 const { t } = useI18n()
+const { isModerator } = useAuth()
 
 const uploaderName = computed(() => {
   const email = String(tool.value?.authorEmail ?? '').trim()
@@ -28,6 +33,24 @@ const toolLink = computed(() => {
   if (/^https?:\/\//i.test(raw)) return raw
   return `https://${raw}`
 })
+
+async function onModeratorDelete() {
+  if (!isModerator.value || !tool.value?.id) return
+  const title = tool.value.title || t('tool.untitledTool')
+  const ok = confirm(t('home.moderatorDeleteConfirm', { title }))
+  if (!ok) return
+
+  deleteBusy.value = true
+  try {
+    await deleteTool(tool.value.id)
+    await router.replace({ name: 'home' })
+  } catch (e) {
+    console.error(e)
+    alert(t('home.moderatorDeleteFailed'))
+  } finally {
+    deleteBusy.value = false
+  }
+}
 
 onMounted(async () => {
   loading.value = true
@@ -115,6 +138,17 @@ onMounted(async () => {
           >
             {{ t('tool.openLink') }}
           </a>
+        </div>
+
+        <div v-if="isModerator" class="mt-5">
+          <AppButton
+            variant="outline"
+            size="sm"
+            :disabled="deleteBusy"
+            @click="onModeratorDelete"
+          >
+            {{ t('tool.moderatorDelete') }}
+          </AppButton>
         </div>
 
         <div class="mt-6 border-t border-slate-200 pt-4 dark:border-slate-700">
