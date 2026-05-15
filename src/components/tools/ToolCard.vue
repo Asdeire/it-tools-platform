@@ -95,10 +95,11 @@ function onDeleteClick() {
         {{ tool.title || t('tool.untitled') }}
       </h3>
       <p
-        class="mb-6 flex-1 text-sm leading-relaxed text-slate-600 dark:text-slate-400"
+        class="mb-6 flex-1 text-sm leading-relaxed text-slate-600 dark:text-slate-400 line-clamp-2"
       >
         {{ tool.description || t('tool.noDescription') }}
       </p>
+
 
       <div
         class="mt-auto flex flex-col gap-3 pt-1 sm:flex-row sm:items-center sm:justify-between"
@@ -166,3 +167,13 @@ function onDeleteClick() {
     </div>
   </article>
 </template>
+ 
+<style scoped>
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+</style>
