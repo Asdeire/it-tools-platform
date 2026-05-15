@@ -99,7 +99,7 @@ async function handleToggleLike(tool) {
 
   pendingLikeToolId.value = id
   try {
-    const { liked } = await toggleLike(currentUser.value.uid, id)
+    const { liked } = await toggleLike(currentUser.value.uid, id, wasLiked)
 
     if (liked !== !wasLiked) {
       const sync = new Set(likedToolIds.value)

@@ -179,9 +179,10 @@ export async function getUserLikedToolIds(userId) {
  *
  * @param {string} userId
  * @param {string} toolId
+ * @param {boolean | null | undefined} [currentLiked]
  * @returns {Promise<{ liked: boolean }>}
  */
-export async function toggleLike(userId, toolId) {
+export async function toggleLike(userId, toolId, currentLiked) {
   const likeRef = doc(db, 'likes', likeDocId(userId, toolId))
   const toolRef = doc(db, 'tools', toolId)
 
@@ -192,9 +193,9 @@ export async function toggleLike(userId, toolId) {
         throw new Error(`Tool not found: ${toolId}`)
       }
 
-      const likeSnap = await transaction.get(likeRef)
+      const hasCurrentLikeState = typeof currentLiked === 'boolean'
 
-      if (likeSnap.exists()) {
+      if (hasCurrentLikeState ? currentLiked : false) {
         transaction.delete(likeRef)
         transaction.update(toolRef, { likesCount: increment(-1) })
         return false
