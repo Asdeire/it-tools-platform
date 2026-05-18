@@ -1,11 +1,30 @@
 import { computed } from 'vue'
 import { defineStore, storeToRefs } from 'pinia'
-import { GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth'
+import {
+  GoogleAuthProvider,
+  onAuthStateChanged,
+  signInWithPopup,
+  signInWithRedirect,
+  signOut,
+} from 'firebase/auth'
 import { auth } from '../firebase/config.js'
 import { USER_ROLE, ensureUserProfile } from '../firebase/api.js'
 
 const googleProvider = new GoogleAuthProvider()
 googleProvider.setCustomParameters({ prompt: 'select_account' })
+
+function shouldUseRedirectFallback(err) {
+  const code = String(err?.code || '')
+  const message = String(err?.message || '')
+
+  return (
+    code === 'auth/popup-blocked' ||
+    code === 'auth/popup-closed-by-user' ||
+    code === 'auth/cancelled-popup-request' ||
+    message.includes('Cross-Origin-Opener-Policy') ||
+    message.includes('window.closed')
+  )
+}
 
 let _unsubscribe = null
 let _readyResolve = null
@@ -91,7 +110,19 @@ export function useAuth() {
 }
 
 export async function signInWithGoogle() {
-  await signInWithPopup(auth, googleProvider)
+  try {
+    await signInWithPopup(auth, googleProvider)
+    return { flow: 'popup' }
+  } catch (err) {
+    console.error('[signInWithGoogle]', err)
+
+    if (shouldUseRedirectFallback(err)) {
+      await signInWithRedirect(auth, googleProvider)
+      return { flow: 'redirect' }
+    }
+
+    throw err
+  }
 }
 
 export async function logout() {

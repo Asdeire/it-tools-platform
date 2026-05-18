@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   createUserWithEmailAndPassword,
@@ -65,6 +65,16 @@ async function afterAuthSuccess() {
   await router.replace(redirect)
 }
 
+watch(
+  () => [isAuthenticated.value, route.query.redirect],
+  ([authed]) => {
+    if (authed) {
+      void afterAuthSuccess()
+    }
+  },
+  { immediate: true },
+)
+
 async function onSubmit() {
   if (busy.value) return
   errorMsg.value = ''
@@ -91,17 +101,15 @@ async function onGoogleSignIn() {
   busy.value = true
 
   try {
-    await signInWithGoogle()
-    await afterAuthSuccess()
+    const result = await signInWithGoogle()
+    if (result?.flow === 'popup') {
+      await afterAuthSuccess()
+    }
   } catch (e) {
     errorMsg.value = mapAuthError(String(e?.code || ''))
   } finally {
     busy.value = false
   }
-}
-
-if (isAuthenticated.value) {
-  router.replace('/home')
 }
 </script>
 
